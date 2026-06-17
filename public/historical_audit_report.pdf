@@ -1,0 +1,115 @@
+%PDF-1.4
+%ÿÿÿÿ
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+4 0 obj
+<<
+/Length 3883>>
+stream
+BT /F2 22 Tf 0.15 0.25 0.5 rg
+1 0 0 1 56 726 Tm (SAMPLE HISTORICAL AUDIT REPORT) Tj ET
+BT /F1 10 Tf 0.6 0.2 0.2 rg
+1 0 0 1 56 695.6 Tm (Generated Using Synthetic Demonstration Data) Tj ET
+56 681.6 556 681.6 re S
+BT /F2 11 Tf 0.2 0.3 0.4 rg
+1 0 0 1 56 661.6 Tm (AEGIS Verification Engine — Portfolio Risk Assessment) Tj ET
+BT /F1 9 Tf 0.4 rg
+1 0 0 1 56 646.4 Tm (Report Date: June 2026 | Engagement: Pilot Phase) Tj ET
+0.9 0.9 0.95 rg
+52 619.6 508 88 re f
+BT /F2 12 Tf 0.15 0.25 0.5 rg
+1 0 0 1 56 617.6 Tm (EXECUTIVE SUMMARY) Tj ET
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 603.2 Tm (This report presents the results of a comprehensive audit of 20 synthetic invoice) Tj ET
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 592.4000000000001 Tm (transactions evaluated by the AEGIS verification engine. The portfolio exhibits a) Tj ET
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 581.6000000000001 Tm (risk profile consistent with early-stage capital deployment, with 40% of invoices) Tj ET
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 570.8000000000002 Tm (flagged for mathematical anomalies, statutory non-compliance, or transit physics) Tj ET
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 560.0000000000002 Tm (violations. Total flagged value: INR 4,28,000.) Tj ET
+BT /F2 12 Tf 0.15 0.25 0.5 rg
+1 0 0 1 56 523.6 Tm (KEY METRICS) Tj ET
+56 515.2 556 515.2 re S
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 497.20000000000005 Tm (Total Invoices Audited:  20) Tj ET
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 485.20000000000005 Tm (Passed \(PASS\):  1) Tj ET
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 473.20000000000005 Tm (Failed \(FAIL / REJECT\):  16) Tj ET
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 461.20000000000005 Tm (Inconclusive \(INCONCLUSIVE / PEND\):  3) Tj ET
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 449.20000000000005 Tm (Anomaly Coverage:  100%) Tj ET
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 437.20000000000005 Tm (Highest Severity Found:  CRITICAL) Tj ET
+BT /F2 12 Tf 0.15 0.25 0.5 rg
+1 0 0 1 56 417.20000000000005 Tm (ANOMALY BREAKDOWN) Tj ET
+56 408.80000000000007 556 408.80000000000007 re S
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 390.80000000000007 Tm (GSTIN Checksum Failure.................. 1 invoice) Tj ET
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 378.80000000000007 Tm (Self-Supply Detected.................... 1 invoice) Tj ET
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 366.80000000000007 Tm (Duplicate Invoice / IRN................. 2 invoices) Tj ET
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 354.80000000000007 Tm (Transit Physics Violation............... 3 invoices) Tj ET
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 342.80000000000007 Tm (Document Chronology Violation........... 4 invoices) Tj ET
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 330.80000000000007 Tm (Tax Arithmetic / Geometry............... 3 invoices) Tj ET
+BT /F1 10 Tf 0.2 rg
+1 0 0 1 56 318.80000000000007 Tm (Statutory Law Violation................. 3 invoices) Tj ET
+BT /F2 12 Tf 0.5 0.15 0.15 rg
+1 0 0 1 56 296.80000000000007 Tm (RISK FINDINGS FOR CRO REVIEW) Tj ET
+56 288.4000000000001 556 288.4000000000001 re S
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 270.4000000000001 Tm (1. Capital Exposure: INR 4,28,000 in flagged invoices requires immediate) Tj ET
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 259.6000000000001 Tm (   reconciliation before funding pipeline expansion.) Tj ET
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 248.80000000000007 Tm (2. Statutory Risk: 35% of invoices exhibit GST compliance failures) Tj ET
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 238.00000000000006 Tm (   \(dual tax regime, place of supply mismatches, missing Part-B updates\).) Tj ET
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 227.20000000000005 Tm (3. Operational Alpha: AEGIS detected 6 distinct anomaly classes across) Tj ET
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 216.40000000000003 Tm (   20 invoices — manual sampling would miss 70% of these signals.) Tj ET
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 205.60000000000002 Tm (4. Recommendation: Deploy automated verification gates at invoice) Tj ET
+BT /F1 9 Tf 0.2 rg
+1 0 0 1 56 194.8 Tm (   submission to prevent capital leakage.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Pages /Kids [6 0 R] /Count 1 >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 5 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 1 0 R /F2 2 0 R /F3 3 0 R >> >> >>
+endobj
+7 0 obj
+<< /Type /Catalog /Pages 5 0 R >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000019 00000 n 
+0000000089 00000 n 
+0000000164 00000 n 
+0000000232 00000 n 
+0000004166 00000 n 
+0000004223 00000 n 
+0000004369 00000 n 
+trailer
+<< /Size 8 /Root 7 0 R >>
+startxref
+4418
+%%EOF

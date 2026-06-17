@@ -1,0 +1,183 @@
+{
+  "info": {
+    "name": "AEGIS Pilot API",
+    "description": "Collection of endpoints for interacting with the AEGIS AI audit pilot flow. Generate, monitor, and retrieve audit reports.",
+    "schema": "https://raw.githubusercontent.com/postmanlabs/api-formats/refs/heads/main/collection/apiv2.1.0/schema.json",
+    "_exporter_id": "aegis-portal"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{aegis_api_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.aegis.dev/v1",
+      "type": "string"
+    },
+    {
+      "key": "aegis_api_token",
+      "value": "your_api_token_here",
+      "type": "string"
+    },
+    {
+      "key": "pilot_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Check API Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Request API Token",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/auth/token",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "token"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_id\": \"your_client_id\",\n  \"client_secret\": \"your_client_secret\",\n  \"grant_type\": \"client_credentials\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pilot Flow",
+      "item": [
+        {
+          "name": "Submit Pilot Request",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/pilot/request",
+              "host": ["{{base_url}}"],
+              "path": ["pilot", "request"]
+            },
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"model_name\": \"gpt-4o\",\n  \"scenario\": \"customer_support_handoff\",\n  \"risk_category\": \"medium\",\n  \"context\": {\n    \"industry\": \"fintech\",\n    \"deployment_type\": \"assistive\",\n    \"user_base\": \"internal\"\n  },\n  \"test_cases\": [\n    {\n      \"input\": \"I want to speak to a human agent\",\n      \"expected\": \"handoff_to_agent\",\n      \"severity\": \"high\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Pilot Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/pilot/{{pilot_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["pilot", "{{pilot_id}}", "status"]
+            },
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ]
+          }
+        },
+        {
+          "name": "Retrieve Pilot Results",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/pilot/{{pilot_id}}/results",
+              "host": ["{{base_url}}"],
+              "path": ["pilot", "{{pilot_id}}", "results"]
+            },
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit Reports",
+      "item": [
+        {
+          "name": "List Reports",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/reports?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["reports"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ]
+          }
+        },
+        {
+          "name": "Get Report Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/reports/{{pilot_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "{{pilot_id}}"]
+            },
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ]
+          }
+        },
+        {
+          "name": "Download Report PDF",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/reports/{{pilot_id}}/download",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "{{pilot_id}}", "download"]
+            },
+            "header": [
+              { "key": "Accept", "value": "application/pdf" }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
