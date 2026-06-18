@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, JetBrains_Mono } from "next/font/google";
 import GlobalNav from "@/components/layout/GlobalNav";
+import Header from "@/components/layout/Header";
 import GlobalFooter from "@/components/layout/GlobalFooter";
 import "./globals.css";
 
@@ -9,8 +10,8 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
@@ -27,12 +28,20 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${jetbrainsMono.variable} h-full antialiased dark`}
     >
-      <body className="flex min-h-screen flex-col bg-[#0A0A0A] text-[#EDEDED]">
+      <body className="flex min-h-screen bg-background text-on-surface">
+        <div className="fixed inset-0 pointer-events-none z-0 grid-overlay" />
         <GlobalNav />
-        <main className="flex-1">{children}</main>
-        <GlobalFooter />
+        <div className="flex flex-col flex-1 ml-64 relative z-10">
+          <Header />
+          <main className="flex-1 pt-16">
+            <div className="mx-auto max-w-container-max w-full px-gutter py-xl md:py-xxl">
+              {children}
+            </div>
+          </main>
+          <GlobalFooter />
+        </div>
       </body>
     </html>
   );

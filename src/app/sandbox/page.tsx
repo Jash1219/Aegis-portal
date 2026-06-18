@@ -1,14 +1,575 @@
-import SandboxLayout from "@/components/sandbox/SandboxLayout";
+"use client";
+
+import { Suspense, useCallback, useMemo, useState } from "react";
+import { Play, Loader2, AlertTriangle } from "lucide-react";
+import {
+  ENGINES,
+  EXPERIMENT_REGISTRY,
+  getValidationById,
+} from "@/config/experimentRegistry";
+import { useSandboxReducer } from "@/hooks/useSandboxReducer";
+import { translateApiResponse } from "@/utils/responseTranslator";
+import { applyMutations } from "@/utils/payloadMutator";
+import { PredictionCard } from "@/components/explainability/PredictionCard";
+import { PredictionVsActualCard } from "@/components/explainability/PredictionVsActualCard";
+import { RiskClassificationCard } from "@/components/explainability/RiskClassificationCard";
+import { RecommendedActionCard } from "@/components/explainability/RecommendedActionCard";
+import { HowToResolveCard } from "@/components/explainability/HowToResolveCard";
+import { ValidationScopeCard } from "@/components/explainability/ValidationScopeCard";
+import { ValidationFindingCard } from "@/components/explainability/ValidationFindingCard";
+import { MathematicalProofCard } from "@/components/explainability/MathematicalProofCard";
+import { TechnicalEvidenceCard } from "@/components/explainability/TechnicalEvidenceCard";
+import RightPaneEmptyState from "@/components/sandbox/RightPaneEmptyState";
+import ExecutiveSummaryPanel from "@/components/sandbox/ExecutiveSummaryPanel";
+import JsonPayloadCard from "@/components/sandbox/JsonPayloadCard";
+import { BusinessImpactCard } from "@/components/explainability/BusinessImpactCard";
+import ModeToggle from "@/components/sandbox/ModeToggle";
+import ValidationCoverageMatrix from "@/components/sandbox/ValidationCoverageMatrix";
+import ExpertModeNavigation from "@/components/sandbox/ExpertModeNavigation";
+import ReplayModeBanner from "@/components/sandbox/ReplayModeBanner";
+
+function buildPayload(
+  experiment: typeof EXPERIMENT_REGISTRY[number],
+  mutations: Record<string, unknown>,
+  customPayload?: Record<string, unknown> | null,
+): Record<string, unknown> {
+  if (customPayload) return customPayload;
+  return applyMutations(experiment.goldenPayload, {}, mutations);
+}
+
+function simulateApiResponse(
+  experiment: typeof EXPERIMENT_REGISTRY[number],
+  payload: Record<string, unknown>,
+): Record<string, unknown> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const p = payload as any;
+
+  if (experiment.id.startsWith("V-TRANSIT-PHYSICS")) {
+    const distance = p?.ewb_data_override?.declared_distance_km ?? p.declared_distance_km ?? 0;
+    const mode = p.transport_mode_hint ?? "ROAD";
+    if (Number(distance) > 500) {
+      return {
+        verdict: "FAIL",
+        anomaly_severity: "HIGH",
+        message: `Implied speed of ${(Number(distance) / 10).toFixed(1)} km/h is unrealistic for mode ${mode}.`,
+        checks: [{ check_id: experiment.id, anomaly: { code: "UNREALISTICALLY_FAST", description: `Distance ${distance}km exceeds plausible range.`, math_proof: { distance_km: distance, validity_hours: 10, implied_speed_kmh: Number(distance) / 10 } } }],
+      };
+    }
+    return {
+      verdict: "PASS",
+      message: "Transit physics validated.",
+      checks: [{ check_id: experiment.id, anomaly: { code: "PHYSICS_CLEARED", math_proof: { distance_km: distance, status: "ACHIEVABLE" } } }],
+    };
+  }
+
+  if (experiment.id.startsWith("V-DUP-FIN")) {
+    const invoiceNum = p.invoice_number ?? "";
+    if (invoiceNum.includes("DUP") || invoiceNum.includes("dup")) {
+      return {
+        verdict: "FAIL",
+        anomaly_severity: "CRITICAL",
+        message: "Invoice matches previously financed record. Duplicate financing blocked.",
+        checks: [{ check_id: experiment.id, anomaly: { code: "DUPLICATE_INVOICE_NUMBER_SUBMISSION", description: "Cryptographic hash collision detected.", math_proof: { hash_algorithm: "SHA-256", match_found: true } } }],
+      };
+    }
+    return {
+      verdict: "PASS",
+      message: "No duplicate detected.",
+      checks: [{ check_id: experiment.id, anomaly: { code: "NO_DUPLICATE", math_proof: { hash_algorithm: "SHA-256", match_found: false } } }],
+    };
+  }
+
+  if (experiment.id.startsWith("V-GST-GEO")) {
+    const gstin = p.supplier_gstin ?? "";
+    const stateCode = parseInt(gstin.substring(0, 2), 10);
+    const validCodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38];
+    if (!validCodes.includes(stateCode)) {
+      return {
+        verdict: "FAIL",
+        anomaly_severity: "HIGH",
+        message: `State code ${stateCode} in GSTIN is invalid.`,
+        checks: [{ check_id: experiment.id, anomaly: { code: "INVALID_STATE_CODE", description: `GSTIN state code ${stateCode} out of valid range.`, math_proof: { gstin: gstin, state_code: stateCode, valid_range: "01-38" } } }],
+      };
+    }
+    return {
+      verdict: "PASS",
+      message: "GSTIN geometry validated.",
+      checks: [{ check_id: experiment.id, anomaly: { code: "GSTIN_VALID", math_proof: { gstin: gstin, state_code: stateCode, status: "VALID" } } }],
+    };
+  }
+
+  if (experiment.id.startsWith("V-CHRONO")) {
+    const invDate = new Date(p.invoice_date ?? "2026-06-15");
+    const ewbRaw = p?.ewb_data_override?.ewb_generated_at ?? p.ewb_generated_at ?? "2026-06-12";
+    const ewbDate = new Date(ewbRaw);
+    if (ewbDate < invDate) {
+      return {
+        verdict: "FAIL",
+        anomaly_severity: "HIGH",
+        message: "Reverse chronology: EWB generated before invoice raised.",
+        checks: [{ check_id: experiment.id, anomaly: { code: "REVERSE_CHRONOLOGY", description: "EWB predates invoice.", math_proof: { invoice_date: invDate.toISOString().split("T")[0], ewb_generated_at: ewbDate.toISOString().split("T")[0] } } }],
+      };
+    }
+    return {
+      verdict: "PASS",
+      message: "Chronology verified.",
+      checks: [{ check_id: experiment.id, anomaly: { code: "CHRONOLOGY_CLEAR", math_proof: { invoice_date: invDate.toISOString().split("T")[0], ewb_generated_at: ewbDate.toISOString().split("T")[0] } } }],
+    };
+  }
+
+  if (experiment.id.startsWith("V-RATE")) {
+    const hsn = p.hsn_code ?? "8471";
+    const declaredRate = Number(p.declared_gst_rate ?? 18);
+    const matrix: Record<string, number> = { "8471": 18, "5201": 5, "6109": 12, "8703": 28, "3004": 12, "2106": 18 };
+    const expectedRate = matrix[hsn] ?? 18;
+    if (declaredRate !== expectedRate) {
+      return {
+        verdict: "FAIL",
+        anomaly_severity: "HIGH",
+        message: `Rate ${declaredRate}% does not match expected ${expectedRate}% for HSN ${hsn}.`,
+        checks: [{ check_id: experiment.id, anomaly: { code: "RATE_MISMATCH", description: `Expected ${expectedRate}%, got ${declaredRate}%.`, math_proof: { hsn_code: hsn, declared_rate: declaredRate, expected_rate: expectedRate } } }],
+      };
+    }
+    return {
+      verdict: "PASS",
+      message: `Rate ${declaredRate}% matches HSN ${hsn}.`,
+      checks: [{ check_id: experiment.id, anomaly: { code: "RATE_MATCH", math_proof: { hsn_code: hsn, declared_rate: declaredRate, expected_rate: expectedRate } } }],
+    };
+  }
+
+  if (experiment.id.startsWith("V-HSN")) {
+    const hsn = p.hsn_code ?? "8471";
+    const desc = (p.product_description ?? "").toLowerCase();
+    const cats: Record<string, string> = { "8471": "electronics", "5201": "textiles", "6109": "apparel", "8703": "automotive", "3004": "pharmaceuticals", "2106": "food_processing" };
+    const cat = cats[hsn] ?? "general";
+    const kws: Record<string, string[]> = { electronics: ["computer", "laptop", "electronic", "circuit", "chip", "monitor", "printer"], textiles: ["cotton", "yarn", "fabric", "thread", "textile", "wool"], apparel: ["shirt", "garment", "apparel", "clothing", "dress", "t-shirt"], automotive: ["car", "vehicle", "auto", "motor", "truck", "tractor"], pharmaceuticals: ["medicine", "drug", "pharma", "tablet", "capsule", "vaccine"], food_processing: ["food", "beverage", "snack", "oil", "dairy", "sauce"] };
+    const match = (kws[cat] ?? ["generic"]).some((kw) => desc.includes(kw));
+    if (!match) {
+      return {
+        verdict: "FAIL",
+        anomaly_severity: "MODERATE",
+        message: `Description does not match category "${cat}" for HSN ${hsn}.`,
+        checks: [{ check_id: experiment.id, anomaly: { code: "HSN_CATEGORY_MISMATCH", description: `Expected category "${cat}" for HSN ${hsn}.`, math_proof: { hsn_code: hsn, expected_category: cat, match_found: false } } }],
+      };
+    }
+    return {
+      verdict: "PASS",
+      message: `HSN ${hsn} matches product description.`,
+      checks: [{ check_id: experiment.id, anomaly: { code: "HSN_MATCH", math_proof: { hsn_code: hsn, expected_category: cat, match_found: true } } }],
+    };
+  }
+
+  if (experiment.id === "V-GATEWAY-001") {
+    return {
+      verdict: "PASS",
+      message: "Gateway connectivity verified.",
+      checks: [{ check_id: experiment.id, anomaly: { code: "GATEWAY_ACTIVE", math_proof: { portal: p.portal_endpoint ?? "gst_portal", status: "reachable" } } }],
+    };
+  }
+
+  if (experiment.id === "V-IDENTITY-001") {
+    const gstinPan = (p.supplier_gstin ?? "").substring(2, 12);
+    const declaredPan = p.declared_pan ?? "";
+    if (gstinPan !== declaredPan) {
+      return {
+        verdict: "FAIL",
+        anomaly_severity: "HIGH",
+        message: "PAN embedded in GSTIN does not match declared PAN.",
+        checks: [{ check_id: experiment.id, anomaly: { code: "PAN_MISMATCH", description: `GSTIN-embedded PAN "${gstinPan}" differs from declared PAN "${declaredPan}".`, math_proof: { gstin_pan: gstinPan, declared_pan: declaredPan, match: false } } }],
+      };
+    }
+    return {
+      verdict: "PASS",
+      message: "PAN-GSTIN linkage verified.",
+      checks: [{ check_id: experiment.id, anomaly: { code: "PAN_MATCH", math_proof: { gstin_pan: gstinPan, declared_pan: declaredPan, match: true } } }],
+    };
+  }
+
+  return { verdict: "PASS", message: "Validation completed." };
+}
+
+function SandboxContent() {
+  const {
+    state,
+    selectExperiment,
+    selectValidation,
+    setMutation,
+    setPrediction,
+    runStart,
+    runSuccess,
+    runError,
+    setVisibilityMode,
+    setSearchQuery,
+  } = useSandboxReducer();
+
+  const [expandedEngineId, setExpandedEngineId] = useState<string | null>(null);
+
+  console.log("[REPLAY DEBUG] === Sandbox State ===");
+  console.log("[REPLAY DEBUG] isCustomPayload:", state.isCustomPayload);
+  console.log("[REPLAY DEBUG] isCustomPayload type:", typeof state.isCustomPayload);
+  console.log("[REPLAY DEBUG] customPayloadData:", state.customPayloadData);
+  console.log("[REPLAY DEBUG] replayContext:", state.replayContext);
+  console.log("[REPLAY DEBUG] activeValidationId:", state.activeValidationId);
+  console.log("[REPLAY DEBUG] activeExperiment.id:", state.activeExperiment.id);
+  console.log("[REPLAY DEBUG] activeExperiment.title:", state.activeExperiment.title);
+  console.log("[REPLAY DEBUG] replayContext?.validationId:", state.replayContext?.validationId);
+
+  const isLoading = state.status === "LOADING";
+  const isExpert = state.visibilityMode === "EXPERT";
+
+  const latestRun =
+    state.executionHistory[state.executionHistory.length - 1] ?? null;
+
+  const handleRun = useCallback(async () => {
+    const payload = buildPayload(
+      state.activeExperiment,
+      state.mutations,
+      state.customPayloadData,
+    );
+    console.log("[REPLAY DEBUG] === Execution Run ===");
+    console.log("[REPLAY DEBUG] isCustomPayload:", state.isCustomPayload);
+    console.log("[REPLAY DEBUG] buildPayload source:", state.customPayloadData ? "customPayloadData" : "registry baseline");
+    console.log("[REPLAY DEBUG] payload:", JSON.stringify(payload));
+
+    runStart();
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    try {
+      const raw = simulateApiResponse(state.activeExperiment, payload);
+      console.log("[REPLAY DEBUG] raw simulation response:", JSON.stringify(raw));
+      const translated = translateApiResponse(raw, state.activeExperiment);
+      console.log("[REPLAY DEBUG] translated verdict:", translated.verdict);
+      runSuccess(translated, state.mutations, state.prediction);
+    } catch (err) {
+      runError(
+        err instanceof Error ? err.message : "Validation execution failed.",
+      );
+    }
+  }, [state.activeExperiment, state.mutations, state.customPayloadData, state.isCustomPayload, state.prediction, runStart, runSuccess, runError]);
+
+  const payloadJson = useMemo(
+    () =>
+      JSON.stringify(
+        buildPayload(state.activeExperiment, state.mutations, state.customPayloadData),
+        null,
+        2,
+      ),
+    [state.activeExperiment, state.mutations, state.customPayloadData],
+  );
+
+  const isFailOrInconclusive =
+    latestRun &&
+    (latestRun.result.verdict === "FAIL" ||
+      latestRun.result.verdict === "INCONCLUSIVE");
+
+  const handleValidationSelect = useCallback(
+    (validationId: string) => {
+      selectValidation(validationId);
+    },
+    [selectValidation],
+  );
+
+  const currentValidation = getValidationById(state.activeExperiment.id);
+
+  const executionControls = (
+    <>
+      {/* Guided Learning Context */}
+      <div className="bg-[#111111] border border-[#222222] rounded-lg p-lg flex flex-col gap-md">
+        <span className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
+          Context
+        </span>
+        <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+          {currentValidation?.purpose ?? state.activeExperiment.purpose}
+        </p>
+        <div className="bg-[#0a0a0a] border border-[#222222] rounded p-md flex flex-col gap-sm">
+          <span className="font-label-caps text-label-caps text-on-surface-variant">
+            Business Context
+          </span>
+          <p className="font-body-sm text-body-sm text-on-surface">
+            {currentValidation?.businessContext ?? state.activeExperiment.businessContext}
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-sm">
+          <div className="flex flex-col gap-xs">
+            <span className="font-label-caps text-label-caps text-secondary">
+              Pass Example
+            </span>
+            <span className="font-data-mono text-data-mono text-on-surface bg-[#0a0a0a] border border-[#222222] rounded px-sm py-xs">
+              {currentValidation?.passExample ?? state.activeExperiment.passExample}
+            </span>
+          </div>
+          <div className="flex flex-col gap-xs">
+            <span className="font-label-caps text-label-caps text-error">
+              Fail Example
+            </span>
+            <span className="font-data-mono text-data-mono text-error bg-[#0a0a0a] border border-error/20 rounded px-sm py-xs">
+              {currentValidation?.failExample ?? state.activeExperiment.failExample}
+            </span>
+          </div>
+        </div>
+        {currentValidation?.detectionDelta && (
+          <div className="bg-[#0a0a0a] border border-yellow-500/20 rounded p-md flex flex-col gap-xs">
+            <span className="font-label-caps text-label-caps text-yellow-400 uppercase tracking-widest">
+              Detection Delta
+            </span>
+            <span className="font-body-sm text-body-sm text-yellow-400/80">
+              {currentValidation.detectionDelta.reasonMissed}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Input Fields */}
+      <div className="bg-[#111111] border border-[#222222] rounded-lg p-lg flex flex-col gap-md">
+        <span className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
+          Input Parameters
+        </span>
+        {state.activeExperiment.mutableFields.map((field) => (
+          <div key={field.key} className="flex flex-col gap-xs">
+            <label
+              htmlFor={field.key}
+              className="font-label-caps text-label-caps text-on-surface-variant"
+            >
+              {field.label}
+            </label>
+            <input
+              id={field.key}
+              type={field.type === "number" ? "number" : "text"}
+              value={(state.mutations[field.key]?.toString() ?? "")}
+              onChange={(e) =>
+                setMutation(
+                  field.key,
+                  field.type === "number"
+                    ? e.target.value === ""
+                      ? ""
+                      : Number(e.target.value)
+                    : e.target.value,
+                )
+              }
+              disabled={isLoading}
+              placeholder={field.placeholder}
+              className="h-10 w-full rounded-lg border border-[#222222] bg-[#0a0a0a] text-primary font-body-sm text-body-sm px-md py-sm outline-none transition-colors focus-visible:border-primary placeholder:text-on-surface-variant/40 disabled:opacity-40 disabled:cursor-not-allowed"
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Prediction */}
+      <PredictionCard
+        selectedState={state.prediction}
+        onSelect={setPrediction}
+      />
+
+      {/* Run Button */}
+      <button
+        onClick={handleRun}
+        disabled={isLoading}
+        className="w-full h-12 rounded-lg bg-primary text-on-primary font-label-caps text-label-caps flex items-center justify-center gap-sm transition-opacity hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Running...
+          </>
+        ) : (
+          <>
+            <Play className="h-4 w-4" />
+            Run Validation
+          </>
+        )}
+      </button>
+    </>
+  );
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <h1 className="font-display-lg text-display-lg text-primary tracking-tight">
+          API Sandbox
+        </h1>
+        <ModeToggle
+          mode={state.visibilityMode}
+          onChange={setVisibilityMode}
+        />
+      </div>
+
+      {state.isCustomPayload && (
+        <ReplayModeBanner context={state.replayContext} />
+      )}
+
+      {/* Validation Coverage Matrix */}
+      <ValidationCoverageMatrix
+        engines={ENGINES}
+        visibilityMode={state.visibilityMode}
+        activeValidationId={state.activeValidationId}
+        onValidationSelect={handleValidationSelect}
+      />
+
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left Pane */}
+        <div className="w-full lg:w-[400px] shrink-0 flex flex-col gap-md">
+          {isExpert ? (
+            <ExpertModeNavigation
+              engines={ENGINES}
+              activeValidationId={state.activeValidationId}
+              searchQuery={state.searchQuery}
+              onSearchChange={setSearchQuery}
+              onValidationSelect={handleValidationSelect}
+              onEngineExpand={setExpandedEngineId}
+              expandedEngineId={expandedEngineId}
+            />
+          ) : (
+            <>
+              {/* Experiment Selector */}
+              <div className="bg-[#111111] border border-[#222222] rounded-lg p-lg flex flex-col gap-md">
+                <label
+                  htmlFor="experiment-select"
+                  className="font-label-caps text-label-caps text-on-surface-variant"
+                >
+                  Experiment
+                </label>
+                <select
+                  id="experiment-select"
+                  value={state.activeExperiment.id}
+                  onChange={(e) => selectExperiment(e.target.value)}
+                  disabled={isLoading}
+                  className="h-10 w-full rounded-lg border border-[#222222] bg-[#0a0a0a] text-primary font-body-sm text-body-sm px-md py-sm outline-none transition-colors focus-visible:border-primary disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {EXPERIMENT_REGISTRY.map((exp) => (
+                    <option key={exp.id} value={exp.id} className="bg-[#0a0a0a]">
+                      {exp.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {executionControls}
+            </>
+          )}
+        </div>
+
+        {/* Right Pane (unchanged) */}
+        <div className="flex-1 flex flex-col gap-md min-w-0">
+          {state.isStale && (
+            <div className="flex items-center gap-sm px-lg py-md rounded-lg border border-yellow-500/20 bg-yellow-500/5">
+              <AlertTriangle className="h-4 w-4 text-yellow-400 shrink-0" />
+              <span className="font-body-sm text-body-sm text-yellow-400">
+                Inputs changed. Run validation again to refresh results.
+              </span>
+            </div>
+          )}
+
+          {state.status === "IDLE" && (isExpert ? (
+            <div className="flex flex-col gap-md">{executionControls}</div>
+          ) : (
+            <RightPaneEmptyState />
+          ))}
+
+          {state.status === "LOADING" && (
+            <div className="flex flex-col items-center justify-center min-h-[400px] bg-[#111111] border border-[#222222] rounded-lg p-xl">
+              <Loader2 className="h-10 w-10 animate-spin text-on-surface-variant mb-md" />
+              <span className="font-body-sm text-body-sm text-on-surface-variant">
+                Validating against AEGIS deterministic engine...
+              </span>
+            </div>
+          )}
+
+          {state.status === "ERROR" && (
+            <div className="flex flex-col items-center justify-center min-h-[400px] bg-[#111111] border border-error/20 rounded-lg p-xl">
+              <span className="font-data-mono text-data-mono text-error mb-sm">
+                ERROR
+              </span>
+              <p className="font-body-sm text-body-sm text-error text-center">
+                {state.error}
+              </p>
+            </div>
+          )}
+
+          {state.status === "SUCCESS" && latestRun && (
+            <div className="flex flex-col gap-md">
+              <ExecutiveSummaryPanel data={latestRun.result} />
+
+              <div className="flex items-center gap-3 pt-md">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+                <span className="font-label-caps text-label-caps text-primary tracking-[0.2em] uppercase shrink-0">
+                  Business Analysis
+                </span>
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+              </div>
+
+              <BusinessImpactCard
+                impactStatement={latestRun.result.impactStatement}
+                verdict={latestRun.result.verdict}
+              />
+
+              <PredictionVsActualCard
+                predictedState={state.prediction}
+                actualState={latestRun.result.actualState}
+              />
+
+              <RiskClassificationCard
+                level={latestRun.result.riskLevel}
+                justification={latestRun.result.riskJustification}
+              />
+
+              <ValidationFindingCard
+                findingTitle={latestRun.result.findingTitle}
+                findingExplanation={latestRun.result.findingExplanation}
+              />
+
+              <ValidationScopeCard
+                engineName={latestRun.result.engineName}
+                engineDescription={latestRun.result.engineDescription}
+              />
+
+              <RecommendedActionCard
+                actionType={latestRun.result.actionType}
+                requiredEvidence={latestRun.result.requiredEvidence}
+              />
+
+              {isFailOrInconclusive && (
+                <HowToResolveCard
+                  resolutionCriteria={latestRun.result.resolutionCriteria}
+                  secondaryProofs={latestRun.result.secondaryProofs}
+                />
+              )}
+
+              <div className="flex items-center gap-3 pt-md">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+                <span className="font-label-caps text-label-caps text-blue-400 tracking-[0.2em] uppercase shrink-0">
+                  Technical Evidence
+                </span>
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+              </div>
+
+              <MathematicalProofCard
+                formula={latestRun.result.formula}
+                variables={latestRun.result.variables}
+                calculatedResult={latestRun.result.calculatedResult}
+              />
+
+              <TechnicalEvidenceCard
+                telemetryData={latestRun.result.telemetryData}
+                timestamps={latestRun.result.timestamps}
+                hashes={latestRun.result.hashes}
+              />
+
+              <JsonPayloadCard label="Request Payload" json={payloadJson} />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function SandboxPage() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A] px-6 pb-8 pt-24 text-[#EDEDED]">
-      <div className="mx-auto max-w-7xl">
-        <h1 className="mb-8 text-2xl font-semibold tracking-tight">
-          API Sandbox
-        </h1>
-        <SandboxLayout />
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[400px]">
+        <span className="font-body-sm text-body-sm text-on-surface-variant">Loading sandbox...</span>
       </div>
-    </div>
+    }>
+      <SandboxContent />
+    </Suspense>
   );
 }
