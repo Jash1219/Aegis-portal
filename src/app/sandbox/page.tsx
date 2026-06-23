@@ -85,6 +85,13 @@ function SandboxContent() {
     runStart();
     await new Promise((resolve) => setTimeout(resolve, 1200));
 
+    if (state.activeExperiment.lifecycle !== "ACTIVE") {
+      const roadmapRaw = { verdict: "INCONCLUSIVE", message: "Validation defined but not yet executable in current engine version." };
+      const translated = translateApiResponse(roadmapRaw, state.activeExperiment);
+      runSuccess(translated, state.mutations, state.prediction);
+      return;
+    }
+
     if (!isEvidenceSufficient(state.activeExperiment, payload)) {
       const skippedRaw = { verdict: "INCONCLUSIVE", message: "Insufficient evidence: missing required fields for this validation." };
       const translated = translateApiResponse(skippedRaw, state.activeExperiment);

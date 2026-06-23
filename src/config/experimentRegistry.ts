@@ -519,6 +519,7 @@ export const VALIDATIONS: ValidationDef[] = [
 export const EXPERIMENTS: ExperimentDef[] = [
   {
     validationId: "V-TRANSIT-PHYSICS-001",
+    lifecycle: "ACTIVE",
     usesSharedBaseline: true,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-TRANSIT-001",
@@ -536,6 +537,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-TRANSIT-PHYSICS-002",
+    lifecycle: "ROADMAP",
     usesSharedBaseline: true,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-TRANSIT-002",
@@ -548,6 +550,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-TRANSIT-PHYSICS-003",
+    lifecycle: "ROADMAP",
     usesSharedBaseline: true,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-TRANSIT-003",
@@ -559,6 +562,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-DUP-FIN-001",
+    lifecycle: "ACTIVE",
     usesSharedBaseline: true,
     scenarioMutations: { invoice_number: "INV-SYNTH-DUP-001" },
     mutableFields: [
@@ -567,6 +571,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-DUP-FIN-002",
+    lifecycle: "ROADMAP",
     usesSharedBaseline: true,
     scenarioMutations: { invoice_number: "INV-SYNTH-DUP-002", invoice_face_value_inr: 10000 },
     mutableFields: [
@@ -575,6 +580,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-DUP-FIN-003",
+    lifecycle: "ROADMAP",
     usesSharedBaseline: true,
     scenarioMutations: { invoice_number: "INV-SYNTH-DUP-003", invoice_face_value_inr: 75000 },
     mutableFields: [
@@ -583,6 +589,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-GST-GEO-001",
+    lifecycle: "ACTIVE",
     usesSharedBaseline: true,
     scenarioMutations: { invoice_number: "INV-SYNTH-GST-GEO-001", supplier_gstin: "99ABCDE1234F5Z6" },
     mutableFields: [
@@ -592,6 +599,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-GST-GEO-002",
+    lifecycle: "ROADMAP",
     usesSharedBaseline: true,
     scenarioMutations: { invoice_number: "INV-SYNTH-GST-GEO-002", supplier_gstin: "2712345678934FZ" },
     mutableFields: [
@@ -600,6 +608,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-GST-GEO-003",
+    lifecycle: "ROADMAP",
     usesSharedBaseline: true,
     scenarioMutations: { invoice_number: "INV-SYNTH-GST-GEO-003", supplier_gstin: "27AAPFU0939F1ZA" },
     mutableFields: [
@@ -608,6 +617,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-CHRONO-001",
+    lifecycle: "ACTIVE",
     usesSharedBaseline: true,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-CHRONO-001",
@@ -621,6 +631,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-CHRONO-002",
+    lifecycle: "ROADMAP",
     usesSharedBaseline: true,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-CHRONO-002",
@@ -634,6 +645,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-CHRONO-003",
+    lifecycle: "ROADMAP",
     usesSharedBaseline: true,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-CHRONO-003",
@@ -646,6 +658,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-RATE-001",
+    lifecycle: "ACTIVE",
     usesSharedBaseline: true,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-RATE-001",
@@ -661,6 +674,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-RATE-002",
+    lifecycle: "ROADMAP",
     usesSharedBaseline: true,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-RATE-002",
@@ -676,6 +690,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-RATE-003",
+    lifecycle: "ROADMAP",
     usesSharedBaseline: true,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-RATE-003",
@@ -691,6 +706,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-HSN-001",
+    lifecycle: "ACTIVE",
     usesSharedBaseline: true,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-HSN-001",
@@ -706,6 +722,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-HSN-002",
+    lifecycle: "ROADMAP",
     usesSharedBaseline: true,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-HSN-002",
@@ -719,6 +736,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-HSN-003",
+    lifecycle: "ROADMAP",
     usesSharedBaseline: true,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-HSN-003",
@@ -733,6 +751,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-GATEWAY-001",
+    lifecycle: "ACTIVE",
     usesSharedBaseline: false,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-GATEWAY-001",
@@ -745,6 +764,7 @@ export const EXPERIMENTS: ExperimentDef[] = [
   },
   {
     validationId: "V-IDENTITY-001",
+    lifecycle: "ACTIVE",
     usesSharedBaseline: false,
     scenarioMutations: {
       invoice_number: "INV-SYNTH-IDENTITY-001",
@@ -833,6 +853,7 @@ function makeExperimentContract(validationId: string): ExperimentContract {
     goldenPayload: compilePayload(validationId),
     mutableFields: experiment.mutableFields,
     requiredEvidence: getRequiredEvidence(validationId),
+    lifecycle: experiment.lifecycle,
   };
 }
 

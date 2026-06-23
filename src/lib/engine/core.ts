@@ -1,5 +1,7 @@
 import type { ExperimentContract } from "@/types/sandbox";
 
+const ROADMAP_MESSAGE = "Validation defined but not yet executable in current engine version.";
+
 export function simulateApiResponse(
   experiment: ExperimentContract,
   payload: Record<string, unknown>,
@@ -7,7 +9,7 @@ export function simulateApiResponse(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const p = payload as any;
 
-  if (experiment.id.startsWith("V-TRANSIT-PHYSICS")) {
+  if (experiment.id === "V-TRANSIT-PHYSICS-001") {
     const distance = p?.ewb_data_override?.declared_distance_km ?? p.declared_distance_km;
     const mode = p.transport_mode_hint;
     if (distance === undefined || distance === null || distance === "") {
@@ -33,7 +35,7 @@ export function simulateApiResponse(
     };
   }
 
-  if (experiment.id.startsWith("V-DUP-FIN")) {
+  if (experiment.id === "V-DUP-FIN-001") {
     const invoiceNum = p.invoice_number ?? "";
     if (invoiceNum.includes("DUP") || invoiceNum.includes("dup")) {
       return {
@@ -50,7 +52,7 @@ export function simulateApiResponse(
     };
   }
 
-  if (experiment.id.startsWith("V-GST-GEO")) {
+  if (experiment.id === "V-GST-GEO-001") {
     const gstin = p.supplier_gstin ?? "";
     const stateCode = parseInt(gstin.substring(0, 2), 10);
     const validCodes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38];
@@ -69,7 +71,7 @@ export function simulateApiResponse(
     };
   }
 
-  if (experiment.id.startsWith("V-CHRONO")) {
+  if (experiment.id === "V-CHRONO-001") {
     const invDate = new Date(p.invoice_date);
     const ewbRaw = p?.ewb_data_override?.ewb_generated_at ?? p.ewb_generated_at;
     const ewbDate = new Date(ewbRaw);
@@ -104,7 +106,7 @@ export function simulateApiResponse(
     };
   }
 
-  if (experiment.id.startsWith("V-RATE")) {
+  if (experiment.id === "V-RATE-001") {
     const hsn = p.hsn_code;
     const declaredRate = Number(p.declared_gst_rate);
     const matrix: Record<string, number> = { "8471": 18, "5201": 5, "6109": 12, "8703": 28, "3004": 12, "2106": 18 };
@@ -140,7 +142,7 @@ export function simulateApiResponse(
     };
   }
 
-  if (experiment.id.startsWith("V-HSN")) {
+  if (experiment.id === "V-HSN-001") {
     const hsn = p.hsn_code;
     const desc = (p.product_description ?? "").toLowerCase();
     if (!hsn) {
@@ -204,5 +206,5 @@ export function simulateApiResponse(
     };
   }
 
-  return { verdict: "PASS", message: "Validation completed." };
+  return { verdict: "INCONCLUSIVE", message: ROADMAP_MESSAGE };
 }

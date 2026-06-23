@@ -185,9 +185,10 @@ export function usePortfolioData(): UsePortfolioDataReturn {
         for (const row of chunk) {
           if (abortRef.current) return;
           for (const vid of UPLOAD_VALIDATION_IDS) {
-            totalEvaluationsAttempted++;
             const experiment = getExperimentByValidationId(vid);
             if (!experiment) continue;
+            if (experiment.lifecycle !== "ACTIVE") continue;
+            totalEvaluationsAttempted++;
 
             if (!isEvidenceSufficient(experiment, row.rawPayload)) {
               skippedEvaluations++;

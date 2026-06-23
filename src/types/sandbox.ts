@@ -44,11 +44,14 @@ export interface ValidationDef {
   severityMapping: SeverityMapping;
 }
 
+export type ExperimentLifecycle = "ACTIVE" | "ROADMAP";
+
 export interface ExperimentDef {
   validationId: string;
   usesSharedBaseline: boolean;
   scenarioMutations: Record<string, unknown>;
   mutableFields: MutableField[];
+  lifecycle: ExperimentLifecycle;
 }
 
 export interface ExperimentContract {
@@ -62,6 +65,7 @@ export interface ExperimentContract {
   goldenPayload: Record<string, unknown>;
   mutableFields: MutableField[];
   requiredEvidence?: string[];
+  lifecycle: ExperimentLifecycle;
 }
 
 export interface ExecutionRun {
