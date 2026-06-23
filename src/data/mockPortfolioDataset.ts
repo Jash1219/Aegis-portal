@@ -290,11 +290,17 @@ function buildRawPayload(
       base.invoice_number = invoice.invoiceNumber;
       break;
     }
-    case "RATE_MATRIX":
-    case "HSN_LOGIC": {
-      const hsn = invoice.hsnCode ?? "8471";
-      base.hsn_code = hsn;
+    case "RATE_MATRIX": {
+      const hsnRate = invoice.hsnCode ?? "8471";
+      base.hsn_code = hsnRate;
       base.declared_gst_rate = invoice.declaredGstRate ?? 18;
+      base.product_description =
+        invoice.productDescription ?? "General merchandise";
+      break;
+    }
+    case "HSN_LOGIC": {
+      const hsnHsn = invoice.hsnCode ?? "8471";
+      base.hsn_code = hsnHsn;
       base.product_description =
         invoice.productDescription ?? "General merchandise";
       break;
@@ -693,5 +699,13 @@ export function generateMockPortfolio(
     supplierConcentration,
     invoices: [...flaggedInvoices, ...cleanInvoices],
     anomalies,
+    dataQuality: {
+      totalEvaluationsAttempted: 1000,
+      successfulEvaluations: 1000,
+      skippedEvaluations: 0,
+      evaluableCoveragePercent: 100,
+      isUntrustworthy: false,
+      missingEvidenceKeys: [],
+    },
   };
 }

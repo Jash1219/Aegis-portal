@@ -1,9 +1,11 @@
 "use client";
 
-import type { PortfolioMetrics } from "@/types/portfolio";
+import type { PortfolioMetrics, DataQualityTelemetry } from "@/types/portfolio";
+import EvaluationCoverageCard from "./EvaluationCoverageCard";
 
 interface PortfolioMetricsGridProps {
   metrics: PortfolioMetrics;
+  dataQuality?: DataQualityTelemetry;
 }
 
 function formatINR(n: number): string {
@@ -47,7 +49,9 @@ function MetricCard({ label, value, subtext, highlight }: MetricCardProps) {
 
 export default function PortfolioMetricsGrid({
   metrics,
+  dataQuality,
 }: PortfolioMetricsGridProps) {
+
   const flaggedPct =
     metrics.totalInvoices > 0
       ? ((metrics.flaggedInvoices / metrics.totalInvoices) * 100).toFixed(1)
@@ -61,7 +65,7 @@ export default function PortfolioMetricsGrid({
         </span>
         <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent" />
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-md">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-md">
         <MetricCard
           label="Total Invoices"
           value={metrics.totalInvoices.toLocaleString()}
@@ -84,6 +88,7 @@ export default function PortfolioMetricsGrid({
           subtext="HIGH or ABSOLUTE severity findings requiring immediate investigation"
           highlight
         />
+        {dataQuality && <EvaluationCoverageCard telemetry={dataQuality} />}
       </div>
     </div>
   );

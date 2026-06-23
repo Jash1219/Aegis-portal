@@ -4,7 +4,7 @@ export interface PortfolioInvoice {
   id: string;
   invoiceNumber: string;
   supplierGstin: string;
-  buyerGstin: string;
+  buyerGstin?: string;
   invoiceDate: string;
   faceValueINR: number;
   status: InvoiceStatus;
@@ -52,6 +52,15 @@ export interface SupplierConcentration {
   percentageOfTotalExposure: number;
 }
 
+export interface DataQualityTelemetry {
+  totalEvaluationsAttempted: number;
+  successfulEvaluations: number;
+  skippedEvaluations: number;
+  evaluableCoveragePercent: number;
+  isUntrustworthy: boolean;
+  missingEvidenceKeys: string[];
+}
+
 export interface PortfolioDataset {
   methodology: {
     scope: string;
@@ -64,4 +73,5 @@ export interface PortfolioDataset {
   supplierConcentration: SupplierConcentration[];
   invoices: PortfolioInvoice[];
   anomalies: PortfolioAnomaly[];
+  dataQuality?: DataQualityTelemetry;
 }

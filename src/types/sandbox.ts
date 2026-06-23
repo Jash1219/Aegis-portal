@@ -61,6 +61,7 @@ export interface ExperimentContract {
   failExample: string;
   goldenPayload: Record<string, unknown>;
   mutableFields: MutableField[];
+  requiredEvidence?: string[];
 }
 
 export interface ExecutionRun {

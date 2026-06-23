@@ -52,6 +52,9 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
         error: null,
         prediction: "PASS",
         activeValidationId: action.experiment.id,
+        isCustomPayload: false,
+        customPayloadData: null,
+        replayContext: null,
       };
     case "SET_MUTATION":
       return {
@@ -93,6 +96,9 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
         isStale: false,
         executionHistory: [],
         error: null,
+        isCustomPayload: false,
+        customPayloadData: null,
+        replayContext: null,
       };
     case "SET_VISIBILITY_MODE": {
       const newMode = action.mode;
@@ -113,6 +119,9 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
         executionHistory: [],
         error: null,
         activeValidationId: goldenId,
+        isCustomPayload: false,
+        customPayloadData: null,
+        replayContext: null,
       };
     }
     case "SET_SEARCH_QUERY":
@@ -138,10 +147,18 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
     }
     case "HYDRATE_FROM_URL":
       console.log("[REDUCER TRACE] action=HYDRATE_FROM_URL validationId=" + action.validationId + " experiment.id=" + action.experiment.id + " mode=" + action.mode + " isCustomPayload=" + (action.isCustomPayload ?? false) + " hasReplayContext=" + (!!action.replayContext));
+      const hydratedMutations = initMutations(action.experiment);
+      if (action.customPayloadData) {
+        for (const key of Object.keys(hydratedMutations)) {
+          if (action.customPayloadData[key] !== undefined) {
+            hydratedMutations[key] = action.customPayloadData[key];
+          }
+        }
+      }
       return {
         ...state,
         activeExperiment: action.experiment,
-        mutations: initMutations(action.experiment),
+        mutations: hydratedMutations,
         status: "IDLE",
         isStale: false,
         executionHistory: [],

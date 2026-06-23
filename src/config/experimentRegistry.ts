@@ -800,6 +800,21 @@ export function getGoldenPathValidation(engineId: string): ValidationDef | undef
   return VALIDATIONS.find((v) => v.parentEngineId === engineId && v.isGoldenPath);
 }
 
+const EVIDENCE_REQUIREMENTS: Record<string, string[]> = {
+  TRANSIT_PHYSICS: ["declared_distance_km"],
+  DUPLICATE_FINANCING: ["invoice_number"],
+  GST_GEOMETRY: ["supplier_gstin"],
+  CHRONOLOGY_OVERRIDE: ["ewb_generated_at"],
+  RATE_MATRIX: ["hsn_code", "declared_gst_rate"],
+  HSN_LOGIC: ["hsn_code", "product_description"],
+};
+
+function getRequiredEvidence(validationId: string): string[] | undefined {
+  const engine = getEngineByValidationId(validationId);
+  if (!engine) return undefined;
+  return EVIDENCE_REQUIREMENTS[engine.id];
+}
+
 function makeExperimentContract(validationId: string): ExperimentContract {
   const validation = VALIDATION_TO_DEF[validationId];
   const engine = VALIDATION_TO_ENGINE[validationId];
@@ -817,6 +832,7 @@ function makeExperimentContract(validationId: string): ExperimentContract {
     failExample: validation.failExample,
     goldenPayload: compilePayload(validationId),
     mutableFields: experiment.mutableFields,
+    requiredEvidence: getRequiredEvidence(validationId),
   };
 }
 

@@ -44,6 +44,7 @@ function SortIcon({ columnKey, sortKey, sortDir }: { columnKey: string; sortKey:
 export default function FindingsTriageTable({
   anomalies,
 }: FindingsTriageTableProps) {
+
   const [sortKey, setSortKey] = useState<SortKey>("flaggedValueINR");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [selectedAnomaly, setSelectedAnomaly] =
