@@ -1,9 +1,18 @@
-export default function Home() {
+import { HeroCommandTerminal } from "@/components/home/HeroCommandTerminal";
+import { SovereignTelemetryGrid } from "@/components/home/SovereignTelemetryGrid";
+import { EngineFamilyMatrix } from "@/components/home/EngineFamilyMatrix";
+import { GovernanceRoutingDock } from "@/components/home/GovernanceRoutingDock";
+
+export default function LandingPageRoot() {
   return (
-    <div className="min-h-screen bg-[#0A0A0A] px-6 pb-8 pt-24 text-[#EDEDED]">
-      <h1 className="text-2xl font-semibold tracking-tight">
-        AEGIS Developer Portal
-      </h1>
+    <div className="min-h-screen bg-background text-on-background relative pb-24 select-text">
+      <div className="absolute inset-0 grid-overlay opacity-40 pointer-events-none" />
+      <div className="relative z-10">
+        <HeroCommandTerminal />
+        <SovereignTelemetryGrid />
+        <EngineFamilyMatrix />
+        <GovernanceRoutingDock />
+      </div>
     </div>
   );
 }

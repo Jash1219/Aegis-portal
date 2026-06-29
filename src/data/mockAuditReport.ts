@@ -16,9 +16,9 @@ export const MOCK_AUDIT_REPORT: HistoricalAuditReport = {
   },
   attribution: {
     primaryEngineTrigger:
-      "Spatiotemporal Physics Engine — 4 of 6 HIGH-severity anomalies originated from physically implausible transit declarations, indicating systematic fabrication of e-way bill distances.",
+      "Transit Physics Engine — 4 of 6 HIGH-severity anomalies originated from physically implausible transit declarations, indicating systematic fabrication of e-way bill distances.",
     concentrationInsight:
-      "82.3% of total capital-at-risk (₹42,67,000) is concentrated in anomalies detected by the Spatiotemporal Physics Engine and the GST Rate Engine, suggesting that invoice fabrication and tax-rate misclassification are the dominant risk vectors in this portfolio.",
+      "82.3% of total capital-at-risk (₹42,67,000) is concentrated in anomalies detected by the Transit Physics Engine and the GST Rate Engine, suggesting that invoice fabrication and tax-rate misclassification are the dominant risk vectors in this portfolio.",
   },
   portfolioMetrics: {
     totalInvoicesReviewed: 20,
@@ -48,7 +48,7 @@ export const MOCK_AUDIT_REPORT: HistoricalAuditReport = {
         "Escalate for manual review: cross-reference with geospatial toll data and request third-party logistics verification before consideration.",
       requiredEvidence:
         "Third-party GPS toll manifest, supplier-signed delivery receipt, and physical inspection certificate.",
-      engineName: "Spatiotemporal Physics Engine",
+      engineName: "Transit Physics Engine",
       findingExplanation:
         "Declared distance of 3,200 km over 14 hours implies 228.6 km/h — physically unattainable for commercial road transport. Anomaly classified as HIGH severity.",
     },
@@ -120,7 +120,7 @@ export const MOCK_AUDIT_REPORT: HistoricalAuditReport = {
         "Request corrected HSN classification. Verify product description against supplier's GST registration certificate.",
       requiredEvidence:
         "Corrected invoice with accurate HSN code, supplier GST registration certificate showing principal goods class.",
-      engineName: "HSN Semantic Classifier",
+      engineName: "HSN Lexical Distance Engine",
       findingExplanation:
         "HSN 8471 maps to 'electronics' category but product description 'Cotton yarn' suggests textiles (HSN 5205). Semantic mismatch detected at MODERATE severity.",
     },

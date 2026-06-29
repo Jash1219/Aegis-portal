@@ -1,5 +1,3 @@
-"use client";
-
 export default function TrustCenterPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A] px-6 pb-8 pt-24">

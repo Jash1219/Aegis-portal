@@ -1,5 +1,3 @@
-"use client";
-
 import { MOCK_AUDIT_REPORT } from "@/data/mockAuditReport";
 import AuditMethodologyHeader from "@/components/audit-report/AuditMethodologyHeader";
 import AuditMetricsGrid from "@/components/audit-report/AuditMetricsGrid";

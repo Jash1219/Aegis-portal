@@ -29,6 +29,9 @@ import ModeToggle from "@/components/sandbox/ModeToggle";
 import ValidationCoverageMatrix from "@/components/sandbox/ValidationCoverageMatrix";
 import ExpertModeNavigation from "@/components/sandbox/ExpertModeNavigation";
 import ReplayModeBanner from "@/components/sandbox/ReplayModeBanner";
+import ExperimentSelect from "@/components/sandbox/ExperimentSelect";
+import ContextPanel from "@/components/sandbox/ContextPanel";
+import RoadmapSection from "@/components/sandbox/RoadmapSection";
 
 function buildPayload(
   experiment: typeof EXPERIMENT_REGISTRY[number],
@@ -71,7 +74,19 @@ function SandboxContent() {
   const latestRun =
     state.executionHistory[state.executionHistory.length - 1] ?? null;
 
+  const activeExperiments = useMemo(
+    () => EXPERIMENT_REGISTRY.filter((e) => e.lifecycle === "ACTIVE"),
+    [],
+  );
+
+  const roadmapExperiments = useMemo(
+    () => EXPERIMENT_REGISTRY.filter((e) => e.lifecycle === "ROADMAP"),
+    [],
+  );
+
   const handleRun = useCallback(async () => {
+    if (state.activeExperiment.lifecycle !== "ACTIVE") return;
+
     const payload = buildPayload(
       state.activeExperiment,
       state.mutations,
@@ -84,13 +99,6 @@ function SandboxContent() {
 
     runStart();
     await new Promise((resolve) => setTimeout(resolve, 1200));
-
-    if (state.activeExperiment.lifecycle !== "ACTIVE") {
-      const roadmapRaw = { verdict: "INCONCLUSIVE", message: "Validation defined but not yet executable in current engine version." };
-      const translated = translateApiResponse(roadmapRaw, state.activeExperiment);
-      runSuccess(translated, state.mutations, state.prediction);
-      return;
-    }
 
     if (!isEvidenceSufficient(state.activeExperiment, payload)) {
       const skippedRaw = { verdict: "INCONCLUSIVE", message: "Insufficient evidence: missing required fields for this validation." };
@@ -136,55 +144,31 @@ function SandboxContent() {
 
   const currentValidation = getValidationById(state.activeExperiment.id);
 
-  const executionControls = (
+  const executionFlow = (
     <>
-      {/* Guided Learning Context */}
+      {/* Experiment Selector */}
       <div className="bg-[#111111] border border-[#222222] rounded-lg p-lg flex flex-col gap-md">
-        <span className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
-          Context
-        </span>
-        <p className="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
-          {currentValidation?.purpose ?? state.activeExperiment.purpose}
-        </p>
-        <div className="bg-[#0a0a0a] border border-[#222222] rounded p-md flex flex-col gap-sm">
-          <span className="font-label-caps text-label-caps text-on-surface-variant">
-            Business Context
-          </span>
-          <p className="font-body-sm text-body-sm text-on-surface">
-            {currentValidation?.businessContext ?? state.activeExperiment.businessContext}
-          </p>
-        </div>
-        <div className="grid grid-cols-2 gap-sm">
-          <div className="flex flex-col gap-xs">
-            <span className="font-label-caps text-label-caps text-secondary">
-              Pass Example
-            </span>
-            <span className="font-data-mono text-data-mono text-on-surface bg-[#0a0a0a] border border-[#222222] rounded px-sm py-xs">
-              {currentValidation?.passExample ?? state.activeExperiment.passExample}
-            </span>
-          </div>
-          <div className="flex flex-col gap-xs">
-            <span className="font-label-caps text-label-caps text-error">
-              Fail Example
-            </span>
-            <span className="font-data-mono text-data-mono text-error bg-[#0a0a0a] border border-error/20 rounded px-sm py-xs">
-              {currentValidation?.failExample ?? state.activeExperiment.failExample}
-            </span>
-          </div>
-        </div>
-        {currentValidation?.detectionDelta && (
-          <div className="bg-[#0a0a0a] border border-yellow-500/20 rounded p-md flex flex-col gap-xs">
-            <span className="font-label-caps text-label-caps text-yellow-400 uppercase tracking-widest">
-              Detection Delta
-            </span>
-            <span className="font-body-sm text-body-sm text-yellow-400/80">
-              {currentValidation.detectionDelta.reasonMissed}
-            </span>
-          </div>
-        )}
+        <label
+          htmlFor="experiment-select"
+          className="font-label-caps text-label-caps text-on-surface-variant"
+        >
+          Experiment
+        </label>
+        <ExperimentSelect
+          experiments={isExpert ? EXPERIMENT_REGISTRY : activeExperiments}
+          value={state.activeExperiment.id}
+          onChange={selectExperiment}
+          disabled={isLoading}
+        />
       </div>
 
-      {/* Input Fields */}
+      {/* Context Panel */}
+      <ContextPanel
+        validation={currentValidation}
+        experiment={state.activeExperiment}
+      />
+
+      {/* Input Parameters */}
       <div className="bg-[#111111] border border-[#222222] rounded-lg p-lg flex flex-col gap-md">
         <span className="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest">
           Input Parameters
@@ -246,6 +230,114 @@ function SandboxContent() {
     </>
   );
 
+  const resultContent = (
+    <>
+      {state.isStale && (
+        <div className="flex items-center gap-sm px-lg py-md rounded-lg border border-yellow-500/20 bg-yellow-500/5">
+          <AlertTriangle className="h-4 w-4 text-yellow-400 shrink-0" />
+          <span className="font-body-sm text-body-sm text-yellow-400">
+            Inputs changed. Run validation again to refresh results.
+          </span>
+        </div>
+      )}
+
+      {state.status === "IDLE" && <RightPaneEmptyState />}
+
+      {state.status === "LOADING" && (
+        <div className="flex flex-col items-center justify-center min-h-[400px] bg-[#111111] border border-[#222222] rounded-lg p-xl">
+          <Loader2 className="h-10 w-10 animate-spin text-on-surface-variant mb-md" />
+          <span className="font-body-sm text-body-sm text-on-surface-variant">
+            Validating against AEGIS deterministic engine...
+          </span>
+        </div>
+      )}
+
+      {state.status === "ERROR" && (
+        <div className="flex flex-col items-center justify-center min-h-[400px] bg-[#111111] border border-error/20 rounded-lg p-xl">
+          <span className="font-data-mono text-data-mono text-error mb-sm">
+            ERROR
+          </span>
+          <p className="font-body-sm text-body-sm text-error text-center">
+            {state.error}
+          </p>
+        </div>
+      )}
+
+      {state.status === "SUCCESS" && latestRun && (
+        <div className="flex flex-col gap-md">
+          <ExecutiveSummaryPanel data={latestRun.result} />
+
+          <div className="flex items-center gap-3 pt-md">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+            <span className="font-label-caps text-label-caps text-primary tracking-[0.2em] uppercase shrink-0">
+              Business Analysis
+            </span>
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+          </div>
+
+          <BusinessImpactCard
+            impactStatement={latestRun.result.impactStatement}
+            verdict={latestRun.result.verdict}
+          />
+
+          <PredictionVsActualCard
+            predictedState={state.prediction}
+            actualState={latestRun.result.actualState}
+          />
+
+          <RiskClassificationCard
+            level={latestRun.result.riskLevel}
+            justification={latestRun.result.riskJustification}
+          />
+
+          <ValidationFindingCard
+            findingTitle={latestRun.result.findingTitle}
+            findingExplanation={latestRun.result.findingExplanation}
+          />
+
+          <ValidationScopeCard
+            engineName={latestRun.result.engineName}
+            engineDescription={latestRun.result.engineDescription}
+          />
+
+          <RecommendedActionCard
+            actionType={latestRun.result.actionType}
+            requiredEvidence={latestRun.result.requiredEvidence}
+          />
+
+          {isFailOrInconclusive && (
+            <HowToResolveCard
+              resolutionCriteria={latestRun.result.resolutionCriteria}
+              secondaryProofs={latestRun.result.secondaryProofs}
+            />
+          )}
+
+          <div className="flex items-center gap-3 pt-md">
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+            <span className="font-label-caps text-label-caps text-blue-400 tracking-[0.2em] uppercase shrink-0">
+              Technical Evidence
+            </span>
+            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+          </div>
+
+          <MathematicalProofCard
+            formula={latestRun.result.formula}
+            variables={latestRun.result.variables}
+            calculatedResult={latestRun.result.calculatedResult}
+          />
+
+          <TechnicalEvidenceCard
+            telemetryData={latestRun.result.telemetryData}
+            timestamps={latestRun.result.timestamps}
+            hashes={latestRun.result.hashes}
+          />
+
+          <JsonPayloadCard label="Request Payload" json={payloadJson} />
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -270,10 +362,22 @@ function SandboxContent() {
         onValidationSelect={handleValidationSelect}
       />
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left Pane */}
-        <div className="w-full lg:w-[400px] shrink-0 flex flex-col gap-md">
-          {isExpert ? (
+      {/* Executive Mode — Single-Column Vertical Flow */}
+      {!isExpert && (
+        <div className="w-full max-w-4xl mx-auto flex flex-col gap-md">
+          {executionFlow}
+          <div className="h-px bg-[#222222]" />
+          {resultContent}
+          <div className="h-px bg-[#222222]" />
+          <RoadmapSection experiments={roadmapExperiments} />
+        </div>
+      )}
+
+      {/* Expert Mode — Left/Right Split */}
+      {isExpert && (
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left Pane: Tree Navigation */}
+          <div className="w-full lg:w-[400px] shrink-0">
             <ExpertModeNavigation
               engines={ENGINES}
               activeValidationId={state.activeValidationId}
@@ -283,147 +387,15 @@ function SandboxContent() {
               onEngineExpand={setExpandedEngineId}
               expandedEngineId={expandedEngineId}
             />
-          ) : (
-            <>
-              {/* Experiment Selector */}
-              <div className="bg-[#111111] border border-[#222222] rounded-lg p-lg flex flex-col gap-md">
-                <label
-                  htmlFor="experiment-select"
-                  className="font-label-caps text-label-caps text-on-surface-variant"
-                >
-                  Experiment
-                </label>
-                <select
-                  id="experiment-select"
-                  value={state.activeExperiment.id}
-                  onChange={(e) => selectExperiment(e.target.value)}
-                  disabled={isLoading}
-                  className="h-10 w-full rounded-lg border border-[#222222] bg-[#0a0a0a] text-primary font-body-sm text-body-sm px-md py-sm outline-none transition-colors focus-visible:border-primary disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {EXPERIMENT_REGISTRY.map((exp) => (
-                    <option key={exp.id} value={exp.id} className="bg-[#0a0a0a]">
-                      {exp.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          </div>
 
-              {executionControls}
-            </>
-          )}
+          {/* Right Pane: Execution + Results */}
+          <div className="flex-1 flex flex-col gap-md min-w-0">
+            {state.status === "IDLE" && executionFlow}
+            {state.status !== "IDLE" && resultContent}
+          </div>
         </div>
-
-        {/* Right Pane (unchanged) */}
-        <div className="flex-1 flex flex-col gap-md min-w-0">
-          {state.isStale && (
-            <div className="flex items-center gap-sm px-lg py-md rounded-lg border border-yellow-500/20 bg-yellow-500/5">
-              <AlertTriangle className="h-4 w-4 text-yellow-400 shrink-0" />
-              <span className="font-body-sm text-body-sm text-yellow-400">
-                Inputs changed. Run validation again to refresh results.
-              </span>
-            </div>
-          )}
-
-          {state.status === "IDLE" && (isExpert ? (
-            <div className="flex flex-col gap-md">{executionControls}</div>
-          ) : (
-            <RightPaneEmptyState />
-          ))}
-
-          {state.status === "LOADING" && (
-            <div className="flex flex-col items-center justify-center min-h-[400px] bg-[#111111] border border-[#222222] rounded-lg p-xl">
-              <Loader2 className="h-10 w-10 animate-spin text-on-surface-variant mb-md" />
-              <span className="font-body-sm text-body-sm text-on-surface-variant">
-                Validating against AEGIS deterministic engine...
-              </span>
-            </div>
-          )}
-
-          {state.status === "ERROR" && (
-            <div className="flex flex-col items-center justify-center min-h-[400px] bg-[#111111] border border-error/20 rounded-lg p-xl">
-              <span className="font-data-mono text-data-mono text-error mb-sm">
-                ERROR
-              </span>
-              <p className="font-body-sm text-body-sm text-error text-center">
-                {state.error}
-              </p>
-            </div>
-          )}
-
-          {state.status === "SUCCESS" && latestRun && (
-            <div className="flex flex-col gap-md">
-              <ExecutiveSummaryPanel data={latestRun.result} />
-
-              <div className="flex items-center gap-3 pt-md">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-                <span className="font-label-caps text-label-caps text-primary tracking-[0.2em] uppercase shrink-0">
-                  Business Analysis
-                </span>
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-              </div>
-
-              <BusinessImpactCard
-                impactStatement={latestRun.result.impactStatement}
-                verdict={latestRun.result.verdict}
-              />
-
-              <PredictionVsActualCard
-                predictedState={state.prediction}
-                actualState={latestRun.result.actualState}
-              />
-
-              <RiskClassificationCard
-                level={latestRun.result.riskLevel}
-                justification={latestRun.result.riskJustification}
-              />
-
-              <ValidationFindingCard
-                findingTitle={latestRun.result.findingTitle}
-                findingExplanation={latestRun.result.findingExplanation}
-              />
-
-              <ValidationScopeCard
-                engineName={latestRun.result.engineName}
-                engineDescription={latestRun.result.engineDescription}
-              />
-
-              <RecommendedActionCard
-                actionType={latestRun.result.actionType}
-                requiredEvidence={latestRun.result.requiredEvidence}
-              />
-
-              {isFailOrInconclusive && (
-                <HowToResolveCard
-                  resolutionCriteria={latestRun.result.resolutionCriteria}
-                  secondaryProofs={latestRun.result.secondaryProofs}
-                />
-              )}
-
-              <div className="flex items-center gap-3 pt-md">
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
-                <span className="font-label-caps text-label-caps text-blue-400 tracking-[0.2em] uppercase shrink-0">
-                  Technical Evidence
-                </span>
-                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
-              </div>
-
-              <MathematicalProofCard
-                formula={latestRun.result.formula}
-                variables={latestRun.result.variables}
-                calculatedResult={latestRun.result.calculatedResult}
-              />
-
-              <TechnicalEvidenceCard
-                telemetryData={latestRun.result.telemetryData}
-                timestamps={latestRun.result.timestamps}
-                hashes={latestRun.result.hashes}
-              />
-
-              <JsonPayloadCard label="Request Payload" json={payloadJson} />
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 }

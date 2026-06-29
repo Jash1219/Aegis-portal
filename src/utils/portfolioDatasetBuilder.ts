@@ -12,12 +12,12 @@ import type {
 import type { NormalizedUploadRow, EvalResult } from "@/types/portfolioUpload";
 
 const ENGINE_NAMES: Record<string, string> = {
-  TRANSIT_PHYSICS: "Spatiotemporal Physics Engine",
+  TRANSIT_PHYSICS: "Transit Physics Engine",
   DUPLICATE_FINANCING: "Deduplication Core",
   GST_GEOMETRY: "GSTIN Structural Analyser",
   CHRONOLOGY_OVERRIDE: "Temporal Sequence Engine",
   RATE_MATRIX: "GST Rate Engine",
-  HSN_LOGIC: "HSN Semantic Classifier",
+  HSN_LOGIC: "HSN Lexical Distance Engine",
 };
 
 const ENGINE_RISK_CATEGORY: Record<

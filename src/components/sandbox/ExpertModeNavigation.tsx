@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EngineDef } from "@/types/sandbox";
-import { getValidationsByEngineId } from "@/config/experimentRegistry";
+import { getValidationsByEngineId, getExperimentByValidationId } from "@/config/experimentRegistry";
 
 interface ExpertModeNavigationProps {
   engines: EngineDef[];
@@ -83,6 +83,8 @@ export default function ExpertModeNavigation({
                 {validations.map((validation) => {
                   const isActive = activeValidationId === validation.id;
                   const isGolden = validation.isGoldenPath;
+                  const exp = getExperimentByValidationId(validation.id);
+                  const isRoadmap = exp?.lifecycle === "ROADMAP";
                   return (
                     <button
                       key={validation.id}
@@ -102,16 +104,24 @@ export default function ExpertModeNavigation({
                           className={cn(
                             "font-body-xs text-body-xs truncate",
                             isActive ? "text-primary" : "text-on-surface",
+                            isRoadmap ? "text-on-surface-variant/50" : "",
                           )}
                         >
-                          {validation.name}
+                          {isRoadmap ? `🔒 Beneficiary Bank Account Duplicate Detection` : validation.name}
                         </span>
                       </div>
-                      {isGolden && (
-                        <span className="font-data-mono text-data-mono text-[10px] text-primary bg-primary/10 px-sm py-[1px] rounded shrink-0 ml-sm">
-                          GOLDEN
-                        </span>
-                      )}
+                      <div className="flex items-center gap-sm shrink-0 ml-sm">
+                        {isRoadmap && (
+                          <span className="font-data-mono text-data-mono text-[10px] text-yellow-500/60 border border-dashed border-yellow-500/30 px-sm py-[1px] rounded">
+                            ROADMAP
+                          </span>
+                        )}
+                        {isGolden && (
+                          <span className="font-data-mono text-data-mono text-[10px] text-primary bg-primary/10 px-sm py-[1px] rounded">
+                            GOLDEN
+                          </span>
+                        )}
+                      </div>
                     </button>
                   );
                 })}

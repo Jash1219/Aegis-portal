@@ -17,7 +17,7 @@ export const SHARED_BASELINE_PAYLOAD: Record<string, unknown> = {
 export const ENGINES: EngineDef[] = [
   {
     id: "TRANSIT_PHYSICS",
-    engineName: "Spatiotemporal Physics Engine",
+    engineName: "Transit Physics Engine",
     purpose:
       "Validates that declared transport distances are physically achievable within e-way bill validity windows for the specified transport mode.",
     visibilityLevel: "EXECUTIVE_AND_EXPERT",
@@ -52,14 +52,14 @@ export const ENGINES: EngineDef[] = [
   },
   {
     id: "HSN_LOGIC",
-    engineName: "HSN Semantic Classifier",
+    engineName: "HSN Lexical Distance Engine",
     purpose:
       "Evaluates semantic consistency between declared HSN codes and product descriptions using a HSN-product ontology.",
     visibilityLevel: "EXECUTIVE_AND_EXPERT",
   },
   {
     id: "SYSTEM_GATEWAY",
-    engineName: "System Gateway & Infrastructure",
+    engineName: "API Gateway & Idempotency Layer",
     purpose:
       "Validates portal connectivity, API response integrity, and infrastructure-level communication with the GST and e-way bill systems.",
     visibilityLevel: "EXPERT_ONLY",
@@ -186,7 +186,7 @@ export const VALIDATIONS: ValidationDef[] = [
   },
   {
     id: "V-DUP-FIN-003",
-    name: "Beneficiary Bank Account Duplicate",
+    name: "[ ROADMAP — LOCKED FOR PILOT ]",
     parentEngineId: "DUPLICATE_FINANCING",
     visibilityLevel: "EXPERT_ONLY",
     isGoldenPath: false,
@@ -274,7 +274,7 @@ export const VALIDATIONS: ValidationDef[] = [
   },
   {
     id: "V-CHRONO-001",
-    name: "Invoice vs EWB Date Chronology",
+    name: "Invoice vs EWB Dispatch Chronology",
     parentEngineId: "CHRONOLOGY_OVERRIDE",
     visibilityLevel: "EXECUTIVE_AND_EXPERT",
     isGoldenPath: true,
@@ -340,7 +340,7 @@ export const VALIDATIONS: ValidationDef[] = [
   },
   {
     id: "V-RATE-001",
-    name: "HSN Rate Matrix Conformance",
+    name: "Statutory GST Conformance",
     parentEngineId: "RATE_MATRIX",
     visibilityLevel: "EXECUTIVE_AND_EXPERT",
     isGoldenPath: true,
@@ -450,7 +450,7 @@ export const VALIDATIONS: ValidationDef[] = [
   },
   {
     id: "V-HSN-003",
-    name: "HSN Digit Depth Analysis",
+    name: "HSN Waterfall Fallback Lookup",
     parentEngineId: "HSN_LOGIC",
     visibilityLevel: "EXPERT_ONLY",
     isGoldenPath: false,
@@ -494,7 +494,7 @@ export const VALIDATIONS: ValidationDef[] = [
   },
   {
     id: "V-IDENTITY-001",
-    name: "PAN-GSTIN Entity Linkage Verification",
+    name: "PAN Entity Linkage & Self-Supply Verification",
     parentEngineId: "IDENTITY_ENTITY",
     visibilityLevel: "EXPERT_ONLY",
     isGoldenPath: false,

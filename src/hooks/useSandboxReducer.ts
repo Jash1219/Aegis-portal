@@ -1,7 +1,6 @@
 "use client";
 
-import { useReducer, useCallback, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useReducer, useCallback, useEffect, useRef, useState } from "react";
 import type {
   SandboxState,
   SandboxAction,
@@ -176,8 +175,12 @@ function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxStat
 }
 
 export function useSandboxReducer() {
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
   const defaultExp = getDefaultExperiment();
+
+  useEffect(() => {
+    setSearchParams(new URLSearchParams(window.location.search));
+  }, []);
 
   const initialState: SandboxState = {
     activeExperiment: defaultExp,
@@ -200,6 +203,7 @@ export function useSandboxReducer() {
   const hydratedReplayRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (!searchParams) return;
     const modeParam = searchParams.get("mode");
     const validationIdParam = searchParams.get("validationId");
     const payloadSource = searchParams.get("payloadSource");

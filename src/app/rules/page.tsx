@@ -1,5 +1,3 @@
-"use client";
-
 const RULE_MANIFEST = [
   { id: "V-TRANSIT-PHYSICS-001", engineFamily: "TRANSIT_PHYSICS", riskVector: "FRAUD", regulatoryIntent: "Verify declared transport distances are physically achievable within e-way bill validity windows to prevent fabricated shipment claims.", lifecycleState: "ACTIVE" as const, requiredHeaders: ["declared_distance_km"] },
   { id: "V-TRANSIT-PHYSICS-002", engineFamily: "TRANSIT_PHYSICS", riskVector: "FRAUD", regulatoryIntent: "Validate that the declared transport mode is appropriate for the distance and goods type to detect mode misrepresentation.", lifecycleState: "ROADMAP" as const, requiredHeaders: ["declared_distance_km"] },

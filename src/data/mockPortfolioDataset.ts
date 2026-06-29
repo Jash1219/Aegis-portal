@@ -33,10 +33,10 @@ function pick<T>(rng: () => number, arr: readonly T[]): T {
 
 const ENGINE_NAMES: Record<string, string> = {
   DUPLICATE_FINANCING: "Deduplication Core",
-  TRANSIT_PHYSICS: "Spatiotemporal Physics Engine",
+  TRANSIT_PHYSICS: "Transit Physics Engine",
   GST_GEOMETRY: "GSTIN Structural Analyser",
   RATE_MATRIX: "GST Rate Engine",
-  HSN_LOGIC: "HSN Semantic Classifier",
+  HSN_LOGIC: "HSN Lexical Distance Engine",
 };
 
 const BAD_ACTOR_GSTIN = "33ABCD1234E1Z5";

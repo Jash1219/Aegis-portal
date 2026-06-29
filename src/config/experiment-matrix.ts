@@ -269,7 +269,7 @@ export const EXPERIMENT_MATRIX: Experiment[] = [
   {
     id: "EXP_06_TRANSIT_PHYSICS",
     title: "Transit Physics Validation",
-    engine: "Spatiotemporal Physics Engine",
+    engine: "Transit Physics Engine",
     endpoint: "/v1/invoice/triangulate",
     businessDescription: "Proves invoice validity by ensuring the declared transport distance mathematically aligns with the E-Way Bill's active timestamp window.",
     inputFields: [
