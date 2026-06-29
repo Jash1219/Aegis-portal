@@ -1,12 +1,6 @@
-export type Verdict =
-  | "PASS"
-  | "FAIL"
-  | "INCONCLUSIVE"
-  | "REJECT"
-  | "PEND"
-  | "GSTIN_CHECKSUM_FAILURE";
+export type Verdict = "PASS" | "FAIL" | "INCONCLUSIVE";
 
-export type Severity = "NONE" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type Severity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 
 export interface CheckAnomaly {
   code: string;
@@ -45,5 +39,4 @@ export interface TriangulateResponse {
   match_fields?: Array<Record<string, unknown>>;
   pricing_tier?: PricingTier;
   status?: string;
-  [key: string]: unknown;
 }

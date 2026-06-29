@@ -23,11 +23,8 @@ function verdictBadgeVariant(verdict: Verdict | undefined) {
     case "PASS":
       return "success" as const;
     case "FAIL":
-    case "REJECT":
-    case "GSTIN_CHECKSUM_FAILURE":
       return "danger" as const;
     case "INCONCLUSIVE":
-    case "PEND":
       return "warning" as const;
     default:
       return "default" as const;
@@ -42,7 +39,6 @@ function severityBadgeVariant(severity: Severity | undefined) {
     case "MEDIUM":
       return "warning" as const;
     case "LOW":
-    case "NONE":
       return "info" as const;
     default:
       return "default" as const;
