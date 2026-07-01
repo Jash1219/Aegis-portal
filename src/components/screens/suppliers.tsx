@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { SupplierIntelligencePanel } from "@/components/ui/supplier-intelligence-panel";
 import { VerdictBadge } from "@/components/ui/verdict-badge";

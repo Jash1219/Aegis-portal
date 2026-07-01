@@ -1,3 +1,5 @@
+"use client";
+
 import { RuleReference } from "@/components/ui/rule-reference";
 
 const PRODUCTION_RULES = [
