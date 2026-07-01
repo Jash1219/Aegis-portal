@@ -3,6 +3,7 @@ import { Geist, JetBrains_Mono } from "next/font/google";
 import GlobalNav from "@/components/layout/GlobalNav";
 import Header from "@/components/layout/Header";
 import GlobalFooter from "@/components/layout/GlobalFooter";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,9 +37,9 @@ export default function RootLayout({
         <div className="flex flex-col flex-1 ml-64 relative z-10">
           <Header />
           <main className="flex-1 pt-16">
-            <div className="mx-auto max-w-container-max w-full px-gutter py-xl md:py-xxl">
+            <DashboardLayout>
               {children}
-            </div>
+            </DashboardLayout>
           </main>
           <GlobalFooter />
         </div>
