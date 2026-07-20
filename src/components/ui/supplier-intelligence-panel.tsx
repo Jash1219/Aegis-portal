@@ -65,9 +65,9 @@ export function SupplierIntelligencePanel({
         <span className="text-label-caps text-on-surface-variant">Provenance</span>
 
         {fieldKeys
-          .filter((key) => supplierIntelligence[key])
           .map((key) => {
-            const field = supplierIntelligence[key]!;
+            const field = supplierIntelligence[key];
+            if (!field) return null;
             return (
               <div key={key} className="contents">
                 <span className="text-on-surface">{FIELD_LABELS[key]}</span>
@@ -86,7 +86,8 @@ export function SupplierIntelligencePanel({
                 </div>
               </div>
             );
-          })}
+          })
+          .filter(Boolean)}
       </div>
     </div>
   );

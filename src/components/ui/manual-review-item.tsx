@@ -11,7 +11,7 @@ interface ManualReviewItemProps {
   primaryAnomalyCode: string;
   allAnomalyCodes: string[];
   daysInQueue: number;
-  verdict: Verdict;
+  verdict?: Verdict;
   href?: string;
   onClick?: () => void;
   className?: string;
@@ -34,9 +34,7 @@ function ManualReviewItemContent({
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className="flex items-center gap-4 min-w-0 flex-[2]">
           <span className="text-data-mono text-foreground truncate">
-            {invoiceReference.length > 12
-              ? `${invoiceReference.slice(0, 12)}\u2026`
-              : invoiceReference}
+            {invoiceReference}
           </span>
           <span className="text-body-sm text-on-surface-variant whitespace-nowrap">
             {supplierState}
@@ -73,7 +71,7 @@ function ManualReviewItemContent({
         <span className="text-body-sm text-on-surface-variant whitespace-nowrap">
           {daysInQueue}d
         </span>
-        <VerdictBadge verdict={verdict} />
+        {verdict ? <VerdictBadge verdict={verdict} /> : null}
       </div>
     </>
   );

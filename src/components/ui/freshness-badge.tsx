@@ -11,6 +11,7 @@ function formatRelativeTime(isoTimestamp: string, isStatic?: boolean): string {
 
   const now = Date.now();
   const then = new Date(isoTimestamp).getTime();
+  if (isNaN(then)) return "Unknown";
   const diffMs = now - then;
   const diffSeconds = Math.floor(diffMs / 1000);
 

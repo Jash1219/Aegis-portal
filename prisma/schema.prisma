@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Verdict {
+  PASS
+  FAIL
+  INCONCLUSIVE
+}
+
+enum Severity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum GovernmentDataSource {
+  GST_PORTAL
+  INCOME_TAX_PORTAL
+  MCA
+  BANK
+  MANUAL_UPLOAD
+  ERP
+  CREDIT_BUREAU
+  PUBLIC_RECORD
+}
+
+enum GovernmentVerificationStatus {
+  VERIFIED
+  NOT_FOUND
+  DISCREPANCY
+  PENDING
+  UNAVAILABLE
+}
+
+enum Role {
+  ANALYST
+  ADMIN
+}
+
+model ApiClient {
+  id            String   @id @default(uuid())
+  key_hash      String
+  name          String?
+  monthly_quota Int      @default(1000)
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  organisations     Organisation[]
+  verificationAudit GovernmentApiAuditLog[]
+  verifications     Verification[]
+}
+
+model Verification {
+  id                             String                        @id @default(uuid())
+  client_reference_id            String?
+  api_client_id                  String?
+  verdict                        Verdict?
+  verdict_code                   String?
+  anomaly_severity               Severity?
+  status                         String?
+  government_verification_status GovernmentVerificationStatus?
+  checks                         Json?
+  match_fields                   Json?
+  supplier_intelligence          Json?
+  pricing_tier                   Json?
+  error                          String?
+  message                        String?
+  created_at                     DateTime                      @default(now())
+
+  apiClient ApiClient? @relation(fields: [api_client_id], references: [id])
+}
+
+model GovernmentDataCache {
+  id          String               @id @default(uuid())
+  data_source GovernmentDataSource
+  source_name String
+  gstin       String?
+  cached_data Json
+  accessed_at DateTime             @default(now())
+  expires_at  DateTime?
+  created_at  DateTime             @default(now())
+  updated_at  DateTime             @updatedAt
+}
+
+model GovernmentApiAuditLog {
+  id              String   @id @default(uuid())
+  api_client_id   String?
+  endpoint        String
+  request_method  String
+  request_body    Json?
+  response_status Int
+  response_body   Json?
+  ip_address      String?
+  created_at      DateTime @default(now())
+
+  apiClient ApiClient? @relation(fields: [api_client_id], references: [id])
+}
+
+model Organisation {
+  id            String   @id @default(uuid())
+  name          String
+  api_client_id String   @unique
+  created_at    DateTime @default(now())
+
+  apiClient ApiClient @relation(fields: [api_client_id], references: [id])
+  users     User[]
+}
+
+model User {
+  id              String    @id @default(uuid())
+  organisation_id String
+  email           String    @unique
+  password_hash   String
+  role            Role      @default(ANALYST)
+  created_at      DateTime  @default(now())
+  last_login_at   DateTime?
+
+  organisation Organisation @relation(fields: [organisation_id], references: [id])
+  sessions     Session[]
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  user_id    String
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+}

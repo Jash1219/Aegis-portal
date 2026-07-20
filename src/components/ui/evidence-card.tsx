@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
-import type { CheckResult } from "@/types/aegis";
+import type { CheckResult, Severity } from "@/types/aegis";
 
-const severityVariant: Record<string, "danger" | "warning" | "info" | "outline"> = {
+const severityVariant: Record<Severity, "danger" | "warning" | "info" | "outline"> = {
   CRITICAL: "danger",
   HIGH: "warning",
   MEDIUM: "info",
@@ -13,7 +13,7 @@ interface EvidenceCardProps {
 }
 
 export function EvidenceCard({ checkResult }: EvidenceCardProps) {
-  const { status, severity, evidence, anomaly } = checkResult;
+  const { status = "", severity, evidence, anomaly } = checkResult;
 
   return (
     <div className="surface-card rounded-lg p-4 space-y-3">
